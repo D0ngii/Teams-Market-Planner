@@ -792,6 +792,22 @@
       shadow.getElementById('safe-view').hidden = !safeMode;
       sendLocal({ type: 'SET_SAFE', enabled: safeMode }).catch(() => {});
     };
+    const keepTyping = event => {
+      if (!overlayHost?.isConnected || event.metaKey || event.ctrlKey || event.altKey || event.key.length !== 1) return;
+      const path = event.composedPath();
+      const field = path.find(node => node.tagName === 'TEXTAREA' || (node.tagName === 'INPUT' && ['text', 'search', 'url', 'email', 'password'].includes(node.type)));
+      if (!field || !path.includes(overlayHost)) return;
+      event.stopPropagation();
+      event.preventDefault();
+      const start = field.selectionStart ?? field.value.length;
+      const end = field.selectionEnd ?? start;
+      const next = field.value.slice(0, start) + event.key + field.value.slice(end);
+      if (field.maxLength >= 0 && next.length > field.maxLength) return;
+      field.value = next;
+      const caret = start + event.key.length;
+      field.setSelectionRange(caret, caret);
+    };
+    window.addEventListener('keydown', keepTyping, true);
     document.addEventListener('keydown', onEscape, true);
     shadow.getElementById('detail-pin').addEventListener('click', () => {
       if (focusedListingId) pinListing(focusedListingId, !savedListings.get(focusedListingId)?.pinned);
@@ -978,6 +994,7 @@
       catch { /* Closing the view still works if extension storage is unavailable. */ }
       finally {
         observer.disconnect();
+        window.removeEventListener('keydown', keepTyping, true);
         document.removeEventListener('keydown', onEscape, true);
         if (refreshTimer) clearTimeout(refreshTimer);
         if (tabTimer) clearTimeout(tabTimer);
