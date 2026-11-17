@@ -1,49 +1,104 @@
-# Local Facebook Marketplace Extractor
+# Teams Market Planner
 
-A manual, local proof of concept. The local page is a small launcher: choose your logged-in Marketplace tab and open a full-page Planner-style board over it. Listings appear as cards in the board and are saved to SQLite. The extension reads rendered page elements only. It does not read cookies, credentials, private APIs, or pages you have not opened.
+A local Planner-style board for Facebook Marketplace. You stay logged in in Chrome. The extension reads the listings already drawn on the page and saves the ones you keep to a SQLite database on your machine. Cookies, passwords, and private APIs stay untouched.
 
-## Requirements
+The board looks like Microsoft Teams Planner: three columns, small photos, and a detail view for each listing. Marketplace remains the page underneath, so new results can still load.
+
+## What you need
 
 - Node.js 20 or newer
 - Google Chrome
-- A Facebook account already logged in in Chrome
+- A Facebook account already logged in in that Chrome profile
 
-## Set up
+## Start it
 
-1. In this directory, run `npm install` and `npm start`.
-2. Visit `http://127.0.0.1:3001/` to open the local launcher.
-3. In Chrome, open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and choose this repository's `extension` directory.
-4. Open or reload a Facebook Marketplace search or listing page in the Chrome profile where you are already logged in.
-5. In the local launcher, choose your Marketplace tab and click **Open Full Page View**. The extension brings that tab forward and covers it with a dark Planner-style board. Listings from the current Marketplace search appear under **Not started**.
-6. Drag a card to **In progress** to keep it across searches and reloads, or use its **Save to In progress** button. Drag it back to **Not started**, or click **Remove from In progress**, to unpin it; it appears in Not started only if it is part of the current search. **Completed** starts collapsed and contains every listing in the local SQLite database when expanded.
-7. Use the board's search field to navigate to Marketplace results. Click **Load more** to scroll the underlying page and wait for one new batch. Click a card to open its Planner-style detail modal. If its description is missing, the extension briefly opens the item's rendered Marketplace page in the same tab behind the board, captures available details, then goes back to the search and restores the modal. The lookup waits up to 15 seconds for a description. Use **Refresh captured details** in the modal to repeat the lookup. Click outside the modal to close it. Press **Esc** anywhere in the board, including from a modal, to switch to a generic work board with no listing titles, prices, images, or other listing details. Press **Esc** again to return. The safe view persists across Marketplace page reloads in the same tab. **Show Marketplace** closes the board.
-8. You can also open the board from the extension popup while on Marketplace, or use the popup's **Extract Listings** button while browsing normally.
-9. Click **Export JSON** in the launcher or extension popup to download saved listings.
+1. In this directory, run `npm install`, then `npm start`.
+2. Open `http://127.0.0.1:3001/`. This is the local launcher.
+3. In Chrome, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and choose this repository's `extension` folder.
+4. Open Facebook Marketplace in the same Chrome profile, on the home page or a search.
 
-After updating the extension files, reload the extension on `chrome://extensions`, then refresh both the Marketplace tab and local launcher. The launcher bridge runs only on `127.0.0.1:3001` or `localhost:3001`.
+After you change extension files, reload the extension on `chrome://extensions`, then refresh the Marketplace tab and the launcher. The launcher only talks to the extension on `127.0.0.1:3001` or `localhost:3001`.
 
-The database is `data/listings.sqlite` by default; `DB_PATH` can set a different path. The database and its journal files are ignored by Git. The API binds only to `127.0.0.1:3001`. It exposes:
+## Open the board
+
+On the launcher, pick your Marketplace tab and click **Open Full Page View**. Chrome brings that tab forward and covers it with the board. Listings from the page you are on appear under **Not started**.
+
+You can do the same from the extension popup with **Open Full Page View**. **Open Dashboard** returns to the launcher. **Extract Listings** saves whatever is visible on Marketplace without opening the board. **Export JSON** downloads the saved collection. The launcher has the same export button.
+
+## Use the board
+
+The board has three columns.
+
+**Not started** is the current Marketplace page. A new search replaces this column. Cards you have not kept live only here.
+
+**In progress** is your shortlist. Drag a card here, or open it and click **Save to In progress**. These cards stay when you search again or reload the tab. Their title and price stay blurred until you hover or focus the card. The photo stays sharp. Drag a card back, or click **Remove from In progress**, to unpin it. It returns to Not started only when it is part of the page you are on.
+
+**Completed** starts closed. Open it to see every listing stored in the local database, including ones that also appear in the other columns.
+
+Each card shows a small photo, the title, and the price. A blue dot in the top-right corner means Marketplace marked that listing **Just listed**.
+
+### Search and home
+
+Type in the search bar and press Enter. The board stays up and Marketplace moves to that search. The gray text in the empty search bar is the search you are on. The field itself stays empty, ready for the next one.
+
+**My day**, in the left sidebar, returns to the Marketplace home page. On the home page, with no search, it stays where it is.
+
+### Open a listing
+
+Click a card. The detail view shows the title, location, price, condition, seller, and description. Your Marketplace tab stays on the current page. The description and extra photos are filled in behind the board. If nothing comes back, the description area says so. **Refresh captured details** tries again.
+
+**Get link** copies `https://www.facebook.com/marketplace/item/…`. The button reads **Copied** for a moment.
+
+The preview on the right holds the listing's photos. When there is more than one, use the arrows, the left and right arrow keys, or click the photo. The large photo starts gray and turns to color when you hover it. Small photos on the board stay at the gray level set in Settings (the gear). The slider starts at 40%.
+
+Click outside the card to close it.
+
+### More listings
+
+Scroll to the bottom of **Not started**. A spinner appears while Marketplace loads another batch. The same action is **Load more** in the **⋯** menu at the top right. One batch waits up to about 20 seconds. The status line says how many cards were added.
+
+That same menu has:
+
+- **Refresh**, which reads the cards on the current page again
+- **Back**, which is the browser Back button for the Marketplace tab under the board
+- **Show Marketplace**, which removes the board and restores the Facebook tab
+
+### Hide the listings
+
+Press **Esc** to cover your listings with a plain sample board: no titles, prices, photos, or other listing details from Marketplace. Press **Esc** again to return. This choice stays on if the Marketplace page reloads in the same tab. **Show Marketplace** clears it.
+
+If Settings is open, **Esc** closes Settings. If a listing is open, **Esc** closes it and switches to the sample board.
+
+## What gets saved
+
+The database is `data/listings.sqlite`. Set `DB_PATH` to use another file. The database and its journal files are ignored by Git. The server listens only on `127.0.0.1:3001`.
+
+Each listing can store `id`, `title`, `price`, `currency`, `location`, `imageUrl`, `listingUrl`, `description`, `condition`, and `seller`, plus `firstSeenAt`, `lastSeenAt`, and whether it is pinned to **In progress**. Older databases gain the `pinned` column on their own. Empty fields are `null`. A later visit that misses a field leaves the earlier value in place. A price written as a bare `$` keeps an unknown currency rather than guessing AUD, USD, or another dollar.
+
+The card thumbnail is the saved image. Extra photos shown in the detail view are loaded for that viewing session.
+
+## Local API
+
+Another program on this machine can read and update the same collection:
 
 - `GET /api/health`
 - `GET /api/listings/count`
-- `GET /api/listings` — JSON for integration with another local application
-- `POST /api/listings` — accepts `{ "listings": [...] }`, validates input and upserts by listing ID
-- `PATCH /api/listings/:id/pin` — accepts `{ "pinned": true }` or `{ "pinned": false }` for the In progress column
-
-Example local request:
+- `GET /api/listings`
+- `POST /api/listings` with `{ "listings": [...] }`, validated and upserted by listing ID
+- `PATCH /api/listings/:id/pin` with `{ "pinned": true }` or `{ "pinned": false }`
 
 ```sh
 curl http://127.0.0.1:3001/api/listings
 ```
 
-## Data and limits
+## Limits
 
-The normalized fields are `id`, `title`, `price`, `currency`, `location`, `imageUrl`, `listingUrl`, `description`, `condition`, and `seller`. Records also have `firstSeenAt`, `lastSeenAt`, and a `pinned` flag in the API and export. Existing databases gain the `pinned` column automatically. Missing fields are `null`; later partial captures do not erase previously captured values. A bare `$` is left with an unknown currency instead of guessing which dollar currency it means.
+Facebook changes the page often. The extension looks for visible `/marketplace/item/{id}` links, so a title, place, or photo can be missing or rough. Search cards rarely include the description, condition, or seller. Those appear when the item page itself shows them.
 
-Facebook changes its DOM frequently, so extraction uses conservative heuristics around visible `/marketplace/item/{id}` links. Some cards may have missing or imperfect titles, locations or images. Search cards usually omit descriptions, so the detail lookup uses the same authenticated Marketplace tab and its rendered item page. The extension returns with Chrome's Back action and also restores the board's card and results scroll positions when possible. Facebook may still reset an infinite-scroll feed during navigation; in that case the original position cannot be guaranteed. Description, condition, and seller details appear only when the rendered item page exposes them. The local launcher does not paginate a hidden Marketplace tab: in testing, Marketplace did not render more cards until its tab became visible. The full-page board keeps that tab active, scrolls only when you click **Load more**, and waits at most 20 seconds for one new batch. Navigation can briefly expose the underlying page while the new document loads. No listing JSON is sent anywhere except the loopback API. The board displays image URLs from their original hosts.
+Marketplace usually draws more cards only while its tab is visible. The board keeps that tab active and scrolls it only when you load more. Searching, going home, or pressing **Back** loads a new Marketplace page, and the Facebook page can show for a moment while that page arrives.
 
-Meta documents a [Marketplace search endpoint in the Content Library API](https://developers.facebook.com/docs/content-library-and-api/content-library-api/guides/fb-marketplace/), but [access is restricted to approved research programs](https://developers.facebook.com/docs/content-library-and-api/get-access) and [downloading its data is limited](https://developers.facebook.com/docs/content-library-and-api/content-library-api/overview). It is not a substitute for this local, logged-in consumer prototype.
+Listing data is sent only to the loopback API. Card images are loaded from their original hosts.
 
-Run `npm test` for normalization and SQLite deduplication checks.
+Meta offers a [Marketplace search endpoint in the Content Library API](https://developers.facebook.com/docs/content-library-and-api/content-library-api/guides/fb-marketplace/). [Access is limited to approved research programs](https://developers.facebook.com/docs/content-library-and-api/get-access), and [downloading that data is limited](https://developers.facebook.com/docs/content-library-and-api/content-library-api/overview). This project is a local, logged-in prototype and does not use that API.
 
-The [MSOutlookit project](https://github.com/nkiryakov/msoutlookit) inspired the two-tab relay design. It uses a bookmarklet in a Reddit tab to fetch Reddit feeds from that tab's origin and send responses to its app tab. Here, a Chrome extension connects the dashboard and existing Marketplace tab; it forwards rendered listing data and does not use Marketplace network endpoints. A live same-origin probe of the ordinary Marketplace home and search URLs found zero listing item paths in their returned HTML, while the rendered home page contained 41 item links. This is why the full-page view relies on Facebook's rendered page rather than a simple HTML relay.
+Run `npm test` to check listing normalization and SQLite deduplication.
