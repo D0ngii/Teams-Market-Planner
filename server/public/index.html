@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Planner bridge</title>
+  <style>
+    :root{font-family:Arial,Helvetica,sans-serif;color:#f4f4f4;background:#1f1f1f}
+    *{box-sizing:border-box} body{margin:0;min-height:100vh}
+    header{height:58px;background:#111;border-bottom:1px solid #353535;display:flex;align-items:center;gap:12px;padding:0 24px;font-size:19px;font-weight:700}
+    .mark{color:#ad9fff;font-size:23px;transform:rotate(-25deg)}
+    main{max-width:660px;margin:11vh auto 40px;padding:0 20px}
+    .eyebrow{color:#aa9aff;font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 14px}
+    h1{font-size:36px;letter-spacing:-.035em;margin:0 0 12px} p{color:#aaa;line-height:1.5;margin:0}
+    .panel{margin-top:28px;padding:24px;background:#292929;border:1px solid #414141;border-radius:10px}
+    label{display:block;font-size:12px;font-weight:700;color:#bcbcbc;margin-bottom:9px}
+    select{width:100%;min-height:43px;padding:9px 12px;background:#202020;border:1px solid #575757;border-radius:6px;color:#f4f4f4;font:inherit}
+    .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+    button{font:inherit;cursor:pointer;border-radius:6px;padding:10px 15px;color:#f4f4f4;border:1px solid #595959;background:#333}
+    button:hover{background:#414141}button:disabled{opacity:.55;cursor:default}
+    #overlay{background:#5145df;border-color:#5145df;font-weight:700;flex:1;min-width:190px}#overlay:hover{background:#6559f0}
+    #relay-status{min-height:22px;margin-top:18px;font-size:13px;color:#bdbdbd}#relay-status.error{color:#ff9e9e}
+    .footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;color:#999;font-size:13px}
+    .footer button{font-size:12px;padding:7px 10px}
+    @media(max-width:560px){main{margin-top:7vh}h1{font-size:29px}.panel{padding:18px}.footer{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <header><span class="mark">◆</span>Planner bridge</header>
+  <main>
+    <p class="eyebrow">Local Marketplace session</p>
+    <h1>Your Planner view is ready.</h1>
+    <p>Choose your open Marketplace tab and launch the full-page board. Marketplace stays active beneath the view so new results can load as you browse.</p>
+    <section class="panel" aria-label="Marketplace connection">
+      <label for="marketplace-tab">MARKETPLACE TAB</label>
+      <select id="marketplace-tab"><option value="">Looking for Marketplace tabs…</option></select>
+      <div class="actions"><button id="overlay" type="button">Open Full Page View</button><button id="find-tabs" type="button">Find tabs</button></div>
+      <p id="relay-status" role="status">Connecting to extension…</p>
+    </section>
+    <div class="footer"><span id="summary">Checking local collection…</span><button id="export" type="button">Export JSON</button></div>
+  </main>
+  <script src="/dashboard.js"></script>
+</body>
+</html>
